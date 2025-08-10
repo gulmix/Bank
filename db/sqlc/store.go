@@ -47,15 +47,13 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
+var txKey = struct{}{}
+
 func (st *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 	err := st.execTx(ctx, func(q *Queries) error {
 		var err error
-		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
-			FromAccountID: arg.FromAccountID,
-			ToAccountID:   arg.ToAccountID,
-			Amount:        arg.Amount,
-		})
+		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams(arg))
 		if err != nil {
 			return err
 		}
@@ -72,6 +70,53 @@ func (st *Store) TransferTx(ctx context.Context, arg TransferTxParams) (Transfer
 		})
 		if err != nil {
 			return err
+		}
+		if arg.FromAccountID < arg.ToAccountID {
+			account1, err := q.GetAccountForUpdate(context.Background(), arg.FromAccountID)
+			if err != nil {
+				return err
+			}
+			result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.FromAccountID,
+				Balance: account1.Balance - arg.Amount,
+			})
+			if err != nil {
+				return err
+			}
+			account2, err := q.GetAccountForUpdate(context.Background(), arg.ToAccountID)
+			if err != nil {
+				return err
+			}
+			result.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.ToAccountID,
+				Balance: account2.Balance + arg.Amount,
+			})
+			if err != nil {
+				return err
+			}
+		} else {
+			account2, err := q.GetAccountForUpdate(context.Background(), arg.ToAccountID)
+			if err != nil {
+				return err
+			}
+			result.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.ToAccountID,
+				Balance: account2.Balance + arg.Amount,
+			})
+			if err != nil {
+				return err
+			}
+			account1, err := q.GetAccountForUpdate(context.Background(), arg.FromAccountID)
+			if err != nil {
+				return err
+			}
+			result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+				ID:      arg.FromAccountID,
+				Balance: account1.Balance - arg.Amount,
+			})
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
