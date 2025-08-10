@@ -37,7 +37,7 @@ jobs:
           sudo mv migrate /usr/local/bin/migrate
     
     - name: Run migrations
-      run: migrate -database "postgresql://postgres:psql@172.19.34.230:5432/bank?sslmode=disable" -verbose up
+      run: migrate -path db/migrations -database "postgresql://postgres:psql@localhost:5432/bank?sslmode=disable" -verbose up
 
     - name: Test
       run: make test
