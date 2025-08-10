@@ -35,9 +35,11 @@ jobs:
       run: |
           curl -L https://github.com/golang-migrate/migrate/releases/download/v4.18.3/migrate.linux-amd64.tar.gz | tar xvz
           sudo mv migrate /usr/local/bin/migrate
-
+    
     - name: Run migrations
       run: make migrateup
+      env:
+        DB_URL: "postgresql://postgres:psql@172.19.34.230:5432/bank?sslmode=disable"
 
     - name: Test
       run: make test
