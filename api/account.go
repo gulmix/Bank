@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/gulmix/bank/db/sqlc"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type createAccountRequest struct {
@@ -27,9 +27,9 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	}
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
-		if pqError, ok := err.(*pq.Error); ok {
-			switch pqError.Code.Name() {
-			case "foreign_key_violation", "unique_violation":
+		if pqError, ok := err.(*pgconn.PgError); ok {
+			switch pqError.ConstraintName {
+			case "users_pkey":
 				ctx.JSON(http.StatusForbidden, errorResponse(err))
 				return
 			}
