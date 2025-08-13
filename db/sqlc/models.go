@@ -32,3 +32,12 @@ type Transfer struct {
 	Amount    int64
 	CreatedAt pgtype.Timestamptz
 }
+
+type User struct {
+	Username          string
+	HashedPassword    string
+	FullName          string
+	Email             string
+	PasswordChangedAt pgtype.Timestamptz
+	CreatedAt         pgtype.Timestamptz
+}
