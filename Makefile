@@ -8,10 +8,10 @@ dropdb:
 	docker exec -it postgres dropdb -U postgres bank
 
 migrateup:
-	migrate -path db/migrations -database "postgresql://postgres:psql@172.19.34.230:5432/bank?sslmode=disable" -verbose up
+	migrate -path db/migrations -database "postgresql://postgres:psql@localhost:5432/bank?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path db/migrations -database "postgresql://postgres:psql@172.19.34.230:5432/bank?sslmode=disable" -verbose down
+	migrate -path db/migrations -database "postgresql://postgres:psql@localhost:5432/bank?sslmode=disable" -verbose down
 
 start:
 	docker start postgres
